@@ -84,7 +84,7 @@ spec:
                     // Generate k8s-manifest-deploy.yaml for scanning
                     sh "helm template -f k8s/helm-values/values-bookinfo-${ENV_NAME}-details.yaml \
                         --set extraEnv.COMMIT_ID=${scmVars.GIT_COMMIT} \
-                        --namespace fuse-bookinfo-${ENV_NAME} bookinfo-${ENV_NAME}-details k8s/helm \
+                        --namespace fuse-bookinfo-${ENV_NAME} fuse-details-${ENV_NAME} k8s/helm \
                         > k8s-manifest-deploy.yaml"
                 }
             } // End container
@@ -165,7 +165,7 @@ spec:
               // Run Helm upgrade
               sh "helm upgrade -i -f k8s/helm-values/values-bookinfo-${ENV_NAME}-details.yaml --wait \
                 --set extraEnv.COMMIT_ID=${scmVars.GIT_COMMIT} \
-                --namespace fuse-bookinfo-${ENV_NAME} bookinfo-${ENV_NAME}-details k8s/helm"
+                --namespace fuse-bookinfo-${ENV_NAME} fuse-details-${ENV_NAME} k8s/helm"
             } // End withKubeConfig
           } // End script
         } // End container
