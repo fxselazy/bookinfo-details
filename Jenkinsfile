@@ -84,7 +84,7 @@ spec:
                     // Generate k8s-manifest-deploy.yaml for scanning
                     sh "helm template -f k8s/helm-values/values-bookinfo-${ENV_NAME}-details.yaml \
                         --set extraEnv.COMMIT_ID=${scmVars.GIT_COMMIT} \
-                        --namespace fuse-bookinfo-${ENV_NAME} bookinfo-${ENV_NAME}-details k8s/helm \
+                        --namespace fuse-bookinfo-${ENV_NAME} fuse-details-${ENV_NAME} k8s/helm \
                         > k8s-manifest-deploy.yaml"
                 }
             } // End container
@@ -122,32 +122,6 @@ spec:
                             error "Pipeline aborted due to quality gate failure: ${qg.status}"
                         }
                     } // End Timeout
-                } // End script
-            } // End container
-        } // End steps
-    } // End stage
-
-    // ***** Stage OWASP *****
-    stage('OWASP Dependency Check') {
-        steps {
-            container('java-node') {
-                script {
-                    // Install application dependency
-                    sh '''cd src/ && npm install --package-lock && cd ../'''
-
-                    // Start OWASP Dependency Check
-                    dependencyCheck(
-                        additionalArguments: "--data /home/jenkins/dependency-check-data --out dependency-check-report.xml",
-                        odcInstallation: "dependency-check"
-                    )
-
-                    // Publish report to Jenkins
-                    dependencyCheckPublisher(
-                        pattern: 'dependency-check-report.xml'
-                    )
-
-                    // Remove applocation dependency
-                    sh'''rm -rf src/node_modules src/package-lock.json'''
                 } // End script
             } // End container
         } // End steps
@@ -191,7 +165,7 @@ spec:
               // Run Helm upgrade
               sh "helm upgrade -i -f k8s/helm-values/values-bookinfo-${ENV_NAME}-details.yaml --wait \
                 --set extraEnv.COMMIT_ID=${scmVars.GIT_COMMIT} \
-                --namespace fuse-bookinfo-${ENV_NAME} bookinfo-${ENV_NAME}-details k8s/helm"
+                --namespace fuse-bookinfo-${ENV_NAME} fuse-details-${ENV_NAME} k8s/helm"
             } // End withKubeConfig
           } // End script
         } // End container

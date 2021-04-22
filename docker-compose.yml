@@ -1,6 +1,0 @@
-services:
-  details:
-    build: .
-    image: ghcr.io/fxselazy/bookinfo-details:dev
-    ports:
-      - "8082:8082"
