@@ -1,14 +1,8 @@
-// Define variables
 def scmVars
 
-// Start Pipeline
 pipeline {
-
-  // Configure Jenkins Slave
   agent {
-    // Use Kubernetes as dynamic Jenkins Slave
     kubernetes {
-      // Kubernetes Manifest File to spin up Pod to do build
       yaml """
 apiVersion: v1
 kind: Pod
@@ -20,8 +14,8 @@ spec:
     - cat
     tty: true
 """
-    } // End kubernetes
-  } // End agent
+    }
+  }
 
   // Git Parameter Choices
   parameters {
@@ -32,42 +26,39 @@ spec:
                  type: 'PT_TAG'
   }
 
-  // Start Pipeline
   stages {
 
     // ***** Stage Clone *****
     stage('Clone details source code') {
-      // Steps to run build
       steps {
-          // Use script to run
-          script {
+        script {
           scmVars = checkout([
             $class: 'GitSCM',
             branches: [[name: "refs/tags/${params.TAG}"]],
             userRemoteConfigs: [[
-              credentialsId: 'bookinfo-git-deploy-key',
+              credentialsId: 'gun-deploy-key',
               url: 'git@github.com:fxselazy/bookinfo-details.git'
             ]]
           ])
-        } // End script
-      } // End steps
-    } // End stage
+        }
+      }
+    }
 
     // ***** Stage Deploy *****
     stage('Deploy details with Helm Chart') {
       steps {
         container('helm') {
           script {
-            withKubeConfig([credentialsId: 'kubeconfig']) {
+            withKubeConfig([credentialsId: 'gke-k8s-kubeconfig']) {
               // Helm upgrade with set production tag
               sh "helm upgrade -i -f k8s/helm-values/values-bookinfo-prd-details.yaml \
                 --set extraEnv.COMMIT_ID=${scmVars.GIT_COMMIT} \
-                --set ratings.tag=${params.TAG} \
+                --set details.tag=${params.TAG} \
                 --namespace fuse-bookinfo-prd fuse-details-prd k8s/helm"
             }
           }
         }
       }
     }
-  } // End stages
-} // End pipeline
+  }
+}
